@@ -7,4 +7,4 @@ Practicas para las asignaturas Arquitectura de Computadores y Estuctrura de Comp
 
 Las carpetas cintienen dos trabajos:
 - Trabajo en el esamblador 88110 que consinste en un programa que aplica filtros a una imagen
-- Trabajo en el esmablador 68000 de Motorola que de
+- Trabajo en el esmablador 68000 de Motorola que de realiza operaciones de E/S concurrentes
