@@ -1,0 +1,14 @@
+#!wish -f
+set Program(InstallDir) /usr/local/bsvc-2.1/bin
+set Program(BitmapDir) $Program(InstallDir)/UI/bitmaps
+set Program(HelpDir) $Program(InstallDir)/UI/help
+set Program(LibDir) $Program(InstallDir)/UI
+set Program(WWWBrowser) ""
+set Program(WWWHomePage) ""
+set Program(StopIndicator) C:\\BSVC\\bin\\STOP
+if {$tcl_version >= 7.5 && $tcl_platform(platform) == "windows"} {
+  option readfile $Program(InstallDir)/UI/bsvc.win 40
+} else {
+  option readfile $Program(InstallDir)/UI/bsvc.ad 40
+}
+source $Program(InstallDir)/UI/main.tk

@@ -1,0 +1,7 @@
+#!/bin/sh
+# TCL_LIBRARY=......
+# TK_LIBRARY=......
+# export TCL_LIBRARY TK_LIBRARY
+ARGS=$*
+export ARGS
+exec wish -f /usr/local/bsvc/bin/UI/bsvc.tk
