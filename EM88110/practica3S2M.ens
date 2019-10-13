@@ -1,0 +1,351 @@
+; Titulaci�n: Grado en Inform�tica. Plan 2009.
+; Materia:    Estructura de Computadores.
+; Archivo:    practica3S2M.ens (para corregir y completar)
+; ----------------------------------------------------------------------
+;
+; Fichero para entregar, una vez corregido/completado, junto con el
+; fichero de autores.
+;
+; ----------------------------------------------------------------------
+; A continuaci�n se especifican 7 subrutinas, de las que las dos primeras
+; est�n ya implementadas, pero contienen errores que se han de corregir.
+; Es necesario respetar los nombres de las subrutinas, tal como est�n
+; especificados: CUENTA, MAXIMO, MCD, MCM, AJUSTE, DIAG, SUMACOL.
+;
+; Se incluye tambi�n un programa principal para llamar a cada subrutina,
+; as� como algunas macros habituales: LEA, DBNZ, PUSH y POP, aunque
+; podr�a requerirse su modificaci�n para lograr un funcionamiento
+; correcto de los programas.
+;
+; ---------------------------------------------> Macros
+;
+LEA:      MACRO  (reg, ETIQ)
+          or     reg, r0,  low(ETIQ)
+          or.u   reg, reg, high(ETIQ)
+          ENDMACRO
+
+DBNZ:     MACRO  (reg, ETIQ)
+          sub    reg, reg, 1
+          cmp    r3, reg, r0
+          bb0    eq, r3, ETIQ
+          ENDMACRO
+
+PUSH:     MACRO  (reg)
+          subu   r30, r30, 4
+          st     reg, r30, r0
+          ENDMACRO
+
+POP:      MACRO  (reg)
+          ld     reg, r30, r0
+          addu   r30, r30, 4
+          ENDMACRO
+
+;
+; ---------------------------------------------> Datos para pruebas
+;
+          org    1000
+
+; Datos de prueba (para subrutina "CUENTA").
+DATOS:    data    "=veinticuatro caracteres\0"
+
+; Datos de prueba (para subrutina "MAXIMO").
+VECTOR:  data  12
+         data  0xD5A2887F, 0x04C0B007, 0x1000CF66
+; Elementos: 7F 88 A2 D5 07 B0 C0 04 66 CF 00 10
+
+; Datos de prueba (para subrutina "MCD").
+; --> No necesarios (ve�se el prog. principal).
+
+; Datos de prueba (para subrutina "MCM").
+; --> No necesarios (ve�se el prog. principal).
+
+; Datos de prueba (para subrutina "AJUSTE").
+; --> No necesarios (ve�se el prog. principal).
+
+; Datos de prueba (para subrutina "DIAG").
+MATRIZA: data  5
+         data  2, 3, 4, 5, 6
+         data  2, 6, 8, 10, 12
+         data  3, 4, 6, 7, 8
+         data  1, 2, 3, 5, 9
+         data  2, 3, 4, 5, 1
+
+; Datos de prueba (para subrutina "SUMACOL").
+MATRIZB: data  3, 5
+         data  1, 2, 3, 4, 5
+         data  5, 3, 5, 3, 5
+         data  1, 3, 5, 7, 9
+
+; Reserva de espacio para almacenar el resultado de SUMACOL.
+RSUMCOL: res   40
+;
+; ---------------------------------------------> Programas llamantes
+;
+          org    2000
+
+; Programa Principal 1 (prueba de subrutina "CUENTA")
+; El resultado quedar� finalmente en r29.
+PPAL1:    LEA    (r25, DATOS)   ; Direcci�n de comienzo de la cadena
+	  bsr    CUENTA
+	  stop
+
+; Programa Principal 2 (prueba de subrutina "MAXIMO")
+; El resultado quedar� finalmente en r29.
+
+PPAL2:    LEA    (r30, 60000)   ; inicializaci�n del puntero de pila
+          LEA    (r23, VECTOR)  ; Direcci�n de comienzo del vector
+	  bsr    MAXIMO
+	  stop
+
+; Programa Principal 3 (prueba de subrutina "MCD")
+; Paso de par�metros de entrada en la pila: MCD(num1, num2)
+; El resultado quedar� finalmente en r29.
+
+PPAL3:    LEA    (r30, 60000)  ; inicializaci�n del puntero de pila
+          or     r2, r0, 10    ; Prueba con los valores 10 y 35
+          or     r3, r0, 35    ; Prueba con los valores 10 y 35
+	  PUSH	 (r3)
+	  PUSH	 (r2)
+	  bsr    MCD
+	  addu	 r30, r30, 8
+	  stop
+
+; Programa Principal 4 (prueba de subrutina "MCM")
+; El resultado quedar� finalmente en r29.
+
+PPAL4:    LEA    (r30, 60000)  ; inicializaci�n del puntero de pila
+          or     r2, r0, 10    ; Prueba con los valores 10 y 35
+          or     r3, r0, 35    ; Prueba con los valores 10 y 35
+	  PUSH	 (r3)
+	  PUSH	 (r2)
+	  bsr    MCM
+	  addu	 r30, r30, 8
+	  stop
+
+; Programa Principal 5 (prueba de subrutina "AJUSTE")
+; El resultado quedar� finalmente en r29.
+
+PPAL5:    LEA    (r30, 60000)  ; inicializaci�n del puntero de pila
+          or     r25, r0, 7    ; Prueba de ajuste con el valor "7"
+	  bsr    AJUSTE
+	  stop
+
+; Programa Principal 6 (prueba de subrutina "DIAG")
+; El resultado quedar� finalmente en r29.
+
+PPAL6:    LEA    (r30, 60000)     ; inicializaci�n del puntero de pila
+          LEA    (r10, MATRIZA)   ; Direcci�n de la matriz
+	  bsr    DIAG
+	  stop
+
+; Programa Principal 7 (prueba de subrutina "SUMACOL")
+; El resultado quedar� a partir de la direcci�n que indica r11.
+
+PPAL7:    LEA    (r30, 60000)     ; inicializaci�n del puntero de pila
+          LEA    (r10, MATRIZB)   ; Direcci�n de comienzo de la cadena
+          LEA    (r11, RSUMCOL)   ; Direcci�n del resultado
+	  bsr    SUMACOL
+	  stop
+
+;
+; ---------------------------------------------> Subrutinas
+;
+; Subrutina CUENTA. Paso de par�metros en registros (r25)
+;             Objetivo: contar el n�mero de caracteres de una cadena dada.
+;             Par�metros de entrada:
+;               r25 contiene la direcci�n de comienzo de la cadena. Se
+;                   debe interpretar que la cadena finaliza con el car�cter
+;                   NUL ('\0').
+;             Resultados:
+;               r29 contendr� el n�mero de caracteres que forman parte de
+;                   la cadena, excluyendo el terminador ('\0').
+;             La subrutina proporcionada contiene DOS errores que se han de
+;             localizar y corregir, de modo que el resultado obtenido en r29
+;             sea el esperado.
+;
+CUENTA:	  addu   r10, r0, r0    ; Contador de caracteres
+BUC:      ld.bu  r3, r25, r10   ; lectura del caracter (MEM[r25+r10])   
+          cmp    r2, r3, 0      ; comprobaci�n de final
+          bb1    eq, r2, FIN    ; si es cero, terminas
+		  addu   r10, r10, 1    ; si no se incrementa el contador
+	 	  br BUC                ; y vuelves al buc 
+FIN:      or     r29, r10, r10  ; en caso contrario, FIN.
+          jmp    (r1)
+
+; Subrutina MAXIMO. Paso de par�metros en registros (r23)
+; El puntero de pila debe estar inicializado en el programa llamante.
+;
+;             Objetivo: Se trata de determinar el valor m�ximo de los
+;             elementos del vector de BYTES SIN SIGNO que comienza en la
+;             direcci�n indicada en r23. Este vector est� formado por un
+;             entero que especifica el n�mero de elementos, seguido de
+;             dichos elementos (v�ase la definici�n del dato VECTOR).
+;             Par�metros de entrada:
+;               r23 contiene la direcci�n de comienzo del vector.
+;             Resultados:
+;               r29 contendr� el m�ximo de los elementos del vector.
+;             La subrutina proporcionada contiene errores que se han de
+;             localizar y corregir, de modo que el resultado obtenido en r29
+;             sea el esperado.
+;
+MAXIMO:  PUSH    (r1)           ;Salvaguarda el registro r1 (�r30 inicializado?)
+		 ld      r4,r23,0       ;r4 es el contador con el n�mero de elementos
+         addu    r23,r23,4
+		 addu    r29,r0,r0      ;r29 almacenar� el valor m�ximo
+BUCLE:   ld.bu   r6,r23,0
+         cmp     r2,r6,r29      ;Si el elemento no es mayor se deja r29
+         bb1     ls,r2,SALTO    ;igual y en caso contrario se cambia
+         or      r29,r6,r0
+SALTO:   add     r23,r23,1      ;Se pasa al elemento siguiente
+         DBNZ    (r4,BUCLE)     ;y se decrementa el contador
+         POP     (r1)
+         jmp     (r1)
+
+; Subrutina MCD. Paso de par�metros por la pila
+;           Objetivo: Dados dos valores num�ricos positivos, recibidos
+;	    como par�metros en la pila, se trata de determinar el m�ximo
+;	    com�n divisor (MCD) de ambos, que se devolver� en r29.
+;	    El m�todo de Euclides para obtener el MCD de dos n�meros es
+;    	    muy sencillo y se implementa f�cilmente en lenguaje
+;	    ensamblador. Se trata de realizar un proceso iterativo en el
+;	    que, partiendo de los dos n�meros iniciales, se sustituye en
+;           cada iteraci�n el mayor de ambos por la diferencia entre el
+;	    mayor y el menor. Cuando ambos valores sean iguales se habr�
+;	    obtenido el MCD de los n�meros facilitados como par�metros.
+;           Ejemplos:
+;             - MCD(35, 10) = 5
+;             - MCD(10, 36) = 2
+;             - MCD(37, 10) = 1
+;             - MCD(7, 7) = 7
+;           Par�metros de entrada:
+;               Dos valores num�ricos positivos que pasan por la pila
+;           Resultados:
+;               r29 devolver� el resultado.
+MCD:		PUSH	(r1)
+			ld	r20, r30, 4 ;cargar los dos miembros
+			ld	r21, r30, 8 ; en r20 y r21
+BUCLE_2:		cmp r2, r20, r21 ; comparamos r20 y r21
+			bb1 eq, r2, FIN2  ; si son iguales acabamos
+			bb1 ls, r2, SEGUNDOMA ; si el segundo mayor 	  
+	        sub r20, r20, r21 
+	        br BUCLE_2
+SEGUNDOMA:  sub r21, r21, r20 
+			br BUCLE_2
+FIN2:         or r29, r20,r0
+	        POP	(r1)
+	        jmp	(r1)
+
+; Subrutina MCM. Paso de par�metros por la pila
+;           Objetivo: Dados dos valores num�ricos positivos, recibidos
+;	    como par�metros en la pila, se trata de determinar el m�nimo
+;	    com�n m�ltiplo (MCM) de ambos, que se devolver� en r29.
+;	    El m�todo m�s sencillo una vez que se conoce el MCD de ambos
+;	    n�meros consiste simplemente en calcular el producto de ambos
+;	    n�meros y dividirlo entre su MCD.
+;           Ejemplos:
+;             - MCM(35, 10) = 70
+;             - MCM(10, 36) = 180
+;             - MCM(37, 10) = 370
+;             - MCM(7, 7) = 7
+;           Par�metros de entrada:
+;               Dos valores num�ricos positivos que pasan por la pila
+;           Resultados:
+;               r29 devolver� el resultado.
+MCM:	PUSH	(r1)
+		ld	r20, r30, 4
+		ld	r21, r30, 8
+		mulu r22, r20, r21
+		POP(r3)
+		bsr MCD
+		divs r29, r22, r29
+		
+		jmp	(r3)
+
+; Subrutina AJUSTE. Paso de par�metros en registros (r25)
+;             Objetivo: Dado un valor num�rico positivo, recibido como
+;             par�metro en r25, se trata de determinar el m�liplo de 4
+;             m�s cercano por exceso a dicho valor. En caso de error, 
+;             se devolver� el valor -1 como resultado. Ejemplos:
+;             - Si r25 vale 7, en r29 se debe devolver 8.
+;             - Si r25 vale 20, en r29 se debe devolver 20.
+;             - Si r25 vale -20, en r29 se debe devolver -1.
+;             Par�metros de entrada:
+;               r25 contiene el valor que se ha de ajustar.
+;             Resultados:
+;               r29 devolver� el resultado (valor ajustado por exceso).
+AJUSTE:     PUSH (r1)  ; PUSH y POP no necesarios, 
+			cmp r7, r25,0
+			bb1 ls, r7, ERROR
+			or r4, r0, 4
+			divu.d r16, r25,r4
+			cmp r7, r17,0
+			bb1 eq, r7, NORESTO
+			add r16,r16,1
+NORESTO:    mulu r29, r16, r4 			
+			br TERMINAR
+ERROR:		ld r29,r0,-1	
+TERMINAR:   POP  (r1)
+            jmp  (r1)
+
+; Subrutina DIAG. Paso de par�metros en registros (r10)
+;             Objetivo: Se trata de determinar la suma de los valores de
+;             la diagonal de una matriz cuadrada especificada por su direcci�n
+;             de memoria, que estar� indicada en r10. Esta matriz est� formada
+;             por un entero que especifica su dimensi�n, seguido de los elementos
+;             de la matriz (enteros) almacenados por filas (v�ase la definici�n
+;             del dato MATRIZA).
+;             Par�metros de entrada:
+;               r10 contiene la direcci�n de comienzo de la matriz.
+;             Resultados:
+;               r29 contendr� la suma de los elementos de la matriz.
+DIAG:      PUSH (r1)  ; PUSH y POP no necesarios, 
+		   ld.bu r11, r10,0 ;cntador iniciado al tama�o de la matriz
+		   ld r4,r10,0 ;para saber cuanto avanzar el cursor calculo el
+		   addu r4,r4,1 ; numero de columnas por fila m�s uno y lo multiplico
+		   mulu r4,r4,4 ; por 4 que es el tama�o
+		   
+		   addu r10,r10,4 ;cursor que apunta al elemento 
+		   addu r29,r0,r0 ; resultado
+SIGOSUMANDO: ld.bu r9,r10,0 
+           addu r29,r29,r9
+		   addu r10,r10,r4 ; avanzo el cursor r4
+		   DBNZ(r11, SIGOSUMANDO)
+           POP  (r1)
+           jmp  (r1)
+
+; Subrutina SUMACOL. Paso de par�metros en registros (r10, r11)
+;             Objetivo: Se trata de determinar la suma de los valores de
+;             todas las columnas de una matriz especificada por su direcci�n
+;             de memoria, que estar� indicada en r10. Esta matriz est� formada
+;             por dos enteros que especifican el n�mero de filas y de columnas,
+;             seguidos por los elementos de la matriz (enteros) almacenados por
+;             filas:
+;               NF, NC, A[0,0], A[0,1], ... A[0,NC-1], A[1,0], A[1,1], ...
+;             (v�ase la definici�n del dato MATRIZB).
+;             Par�metros de entrada:
+;               r10 contiene la direcci�n de comienzo de la matriz.
+;             Resultados:
+;               A partir de la direcci�n de memoria indicada en r11 quedar�n
+;               almacenados los valores correspondientes a la suma de cada
+;               columna.
+SUMACOL:   ;PUSH (r1)  ; PUSH y POP no necesarios, 
+           ld r4,r10,0 ;numero de filas
+		   addu r10,r10,4
+		   ld r5, r10,0 ;numero de columnas
+		   ld r9,r10,0 ;para saber cuanto avanzar el cursor al bajar de fila calculo el
+		   mulu r9,r5,4 ; numero de columnas por fila y lo multiplico por 4 que es el tama�o de cada elemento
+		   addu r10,r10,4
+BUCLE1:    addu r6,r4,0
+           addu r8,r10,0 ; cursor de columnas	
+		   addu r29,r0,r0 ;variable temporal para almacenar resultado de cada columna
+BUCLE2:    ld.bu r20,r8,0
+		   addu r29,r29,r20
+           addu r8, r8, r9
+		   DBNZ(r6, BUCLE2)
+		   st.b r29, r11,0
+		   addu r11,r11,4
+		   addu r10,r10,4
+		   DBNZ(r5, BUCLE1)
+           
+          ; POP  (r1)
+           jmp  (r1)
