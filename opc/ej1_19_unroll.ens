@@ -1,0 +1,96 @@
+;*********************************************
+; #define NUM_FIL 16
+; #define NUM_COL 8
+; #define CTE 2
+; #define TAM_BLOQ 4
+;  main()
+;{
+; /* Las inicializaciones de las estructuras se hacen
+;    en ensamblador con DATA */
+;  int mat[NUM_FIL][NUM_COL] = {{1,1,1, ....},{....}};
+;  int sc[NUM_COL] = {0,0,0, .....};
+;  register int i,j;
+;
+;/* Calcula la suma de los elementos de cada columna */
+;
+;for (j=0;j<NUM_COL;j+=TAM_BLOQ)
+;   for (i=0;i<NUM_FIL;i++) {
+;      sc[j] = sc[j] + mat[i][j]*CTE;
+;      sc[j+1] = sc[j+1] + mat[i][j+1]*CTE;
+;      sc[j+2] = sc[j+2] + mat[i][j+2]*CTE;
+;      sc[j+3] = sc[j+3] + mat[i][j+3]*CTE;
+;   }
+;*********************************************************
+       org 112
+PPAL:
+	or r20, r0, low(mat)     ;  direccion de comienzo de mat
+	or.u r20, r20, high(mat)
+	or r21, r0, low(sc)     ;  direccion de comienzo de sc
+	or.u r21, r21, high(sc)
+
+	or r1, r0, 0		; j = 0
+
+bucj:
+	mak r10, r1, 0<2>	; j*4 bytes por elemento
+	or r2, r0, 0		; i = 0
+
+buci:
+	mak r11, r2, 0<3>	; i*NUM_COL
+	mak r11, r11, 0<2>	; y *4 bytes por elemento
+	add r23, r21, r10       ; direccion de sc(j)
+	ld r12, r23, 0		; leer sc[j]
+	add r13, r11, r10	; direccion relativa elemento de mat
+	add r24, r20, r13       ; direccion de mat(i,j)
+	ld r14, r24, 0	 	; leer mat(i,j)
+	mak r14, r14, 0<1>      ; mat(i,j)*CTE
+	add r15, r12, r14
+	st r15, r23, 0		; sc(j) = sc(j)+mat(i,j)
+
+	ld r12, r23, 4		; leer sc[j+1]
+	ld r14, r24, 4	 	; leer mat(i,j+1)
+	mak r14, r14, 0<1>      ; mat(i,j+1)*CTE
+	add r15, r12, r14
+	st r15, r23, 4		; sc(j+1) = sc(j+1)+mat(i,j+1)
+
+	ld r12, r23, 8		; leer sc[j+2]
+	ld r14, r24, 8	 	; leer mat(i,j+2)
+	mak r14, r14, 0<1>      ; mat(i,j+2)*CTE
+	add r15, r12, r14
+	st r15, r23, 8		; sc(j+2) = sc(j+2)+mat(i,j+2)
+
+	ld r12, r23, 12		; leer sc[j+3]
+	ld r14, r24, 12	 	; leer mat(i,j+3)
+	mak r14, r14, 0<1>      ; mat(i,j+3)*CTE
+	add r15, r12, r14
+	st r15, r23, 12		; sc(j+3) = sc(j+3)+mat(i,j+3)
+
+	add r2, r2, 1		; i = i+1
+	cmp r18, r2, 16		; comparar i con NUM_FIL
+	bb1 lt, r18, buci
+
+	add r1, r1, 4		; j = j+4
+	cmp r18, r1, 8		; comparar j con NUM_COL
+	bb1 lt, r18, bucj
+	stop
+
+; Datos
+org 2048
+mat:
+        data    1,1,1,1,1,1,1,1,
+                2,2,2,2,2,2,2,2,
+                3,3,3,3,3,3,3,3,
+                4,4,4,4,4,4,4,4,
+                5,5,5,5,5,5,5,5,
+                6,6,6,6,6,6,6,6,
+                7,7,7,7,7,7,7,7,
+                8,8,8,8,8,8,8,8,
+                9,9,9,9,9,9,9,9,
+                10,10,10,10,10,10,10,10,
+                11,11,11,11,11,11,11,11,
+                12,12,12,12,12,12,12,12,
+                13,13,13,13,13,13,13,13,
+                14,14,14,14,14,14,14,14,
+                15,15,15,15,15,15,15,15,
+                1,2,3,4,5,6,7,8
+sc:
+        data    0,0,0,0,0,0,0,0
